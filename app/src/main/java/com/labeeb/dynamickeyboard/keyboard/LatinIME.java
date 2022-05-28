@@ -362,7 +362,7 @@ public class LatinIME extends InputMethodService implements
         }
         Resources res = getResources();
         /*
-        * TODO: LatinIME:: Whole prefs checks added here
+        * Todo: LatinIME:: Whole prefs checks added here
         * */
         mReCorrectionEnabled = prefs.getBoolean(PREF_RECORRECTION_ENABLED,
                 res.getBoolean(R.bool.default_recorrection_enabled));
@@ -392,15 +392,6 @@ public class LatinIME extends InputMethodService implements
 //        mVoiceRecognitionTrigger = new VoiceRecognitionTrigger(this);
         
         updateKeyboardOptions();
-
-        PluginManager.getPluginDictionaries(getApplicationContext());
-        mPluginManager = new PluginManager(this);
-        final IntentFilter pFilter = new IntentFilter();
-        pFilter.addDataScheme("package");
-        pFilter.addAction("android.intent.action.PACKAGE_ADDED");
-        pFilter.addAction("android.intent.action.PACKAGE_REPLACED");
-        pFilter.addAction("android.intent.action.PACKAGE_REMOVED");
-        registerReceiver(mPluginManager, pFilter);
 
         LatinIMEUtil.GCUtils.getInstance().reset();
         boolean tryGC = true;
@@ -3479,12 +3470,6 @@ public class LatinIME extends InputMethodService implements
         updateShiftKeyState(getCurrentInputEditorInfo());
     }
 
-    public static <E> ArrayList<E> newArrayList(E... elements) {
-        int capacity = (elements.length * 110) / 100 + 5;
-        ArrayList<E> list = new ArrayList<E>(capacity);
-        Collections.addAll(list, elements);
-        return list;
-    }
 
     @Override
     protected void dump(FileDescriptor fd, PrintWriter fout, String[] args) {
@@ -3514,18 +3499,6 @@ public class LatinIME extends InputMethodService implements
     private int mCpsIndex;
     private static Pattern NUMBER_RE = Pattern.compile("(\\d+).*");
 
-    private void measureCps() {
-        long now = System.currentTimeMillis();
-        if (mLastCpsTime == 0)
-            mLastCpsTime = now - 100; // Initial
-        mCpsIntervals[mCpsIndex] = now - mLastCpsTime;
-        mLastCpsTime = now;
-        mCpsIndex = (mCpsIndex + 1) % CPS_BUFFER_SIZE;
-        long total = 0;
-        for (int i = 0; i < CPS_BUFFER_SIZE; i++)
-            total += mCpsIntervals[i];
-        System.out.println("CPS = " + ((CPS_BUFFER_SIZE * 1000f) / total));
-    }
 
     public void onAutoCompletionStateChanged(boolean isAutoCompletion) {
         mKeyboardSwitcher.onAutoCompletionStateChanged(isAutoCompletion);

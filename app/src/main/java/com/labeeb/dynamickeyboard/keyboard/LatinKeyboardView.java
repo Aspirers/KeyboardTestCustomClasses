@@ -3,12 +3,16 @@ package com.labeeb.dynamickeyboard.keyboard;
 import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
+import android.provider.MediaStore;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -19,16 +23,18 @@ import android.widget.TextView;
 import com.labeeb.dynamickeyboard.R;
 import com.labeeb.dynamickeyboard.keyboard.Keyboard.Key;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 public class LatinKeyboardView extends LatinKeyboardBaseView {
     static final String TAG = "HK/LatinKeyboardView";
 
-	// The keycode list needs to stay in sync with the
-	// res/values/keycodes.xml file.
+    // The keycode list needs to stay in sync with the
+    // res/values/keycodes.xml file.
 
-	// FIXME: The following keycodes should really be renumbered
-	// since they conflict with existing KeyEvent keycodes.
+    // FIXME: The following keycodes should really be renumbered
+    // since they conflict with existing KeyEvent keycodes.
     static final int KEYCODE_OPTIONS = -100;
     static final int KEYCODE_OPTIONS_LONGPRESS = -101;
     static final int KEYCODE_VOICE = -102;
@@ -36,8 +42,8 @@ public class LatinKeyboardView extends LatinKeyboardBaseView {
     static final int KEYCODE_NEXT_LANGUAGE = -104;
     static final int KEYCODE_PREV_LANGUAGE = -105;
     static final int KEYCODE_COMPOSE = -10024;
-    
-	// The following keycodes match (negative) KeyEvent keycodes.
+
+    // The following keycodes match (negative) KeyEvent keycodes.
     // Would be better to use the real KeyEvent values, but many
     // don't exist prior to the Honeycomb API (level 11).
     static final int KEYCODE_DPAD_UP = -19;
@@ -76,27 +82,41 @@ public class LatinKeyboardView extends LatinKeyboardBaseView {
 
     private Keyboard mPhoneKeyboard;
 
-    /** Whether the extension of this keyboard is visible */
+    /**
+     * Whether the extension of this keyboard is visible
+     */
     private boolean mExtensionVisible;
-    /** The view that is shown as an extension of this keyboard view */
+    /**
+     * The view that is shown as an extension of this keyboard view
+     */
     private LatinKeyboardView mExtension;
-    /** The popup window that contains the extension of this keyboard */
+    /**
+     * The popup window that contains the extension of this keyboard
+     */
     private PopupWindow mExtensionPopup;
-    /** Whether this view is an extension of another keyboard */
+    /**
+     * Whether this view is an extension of another keyboard
+     */
     private boolean mIsExtensionType;
     private boolean mFirstEvent;
 
-    /** Whether we've started dropping move events because we found a big jump */
+    /**
+     * Whether we've started dropping move events because we found a big jump
+     */
     private boolean mDroppingEvents;
     /**
      * Whether multi-touch disambiguation needs to be disabled for any reason. There are 2 reasons
-     * for this to happen - (1) if a real multi-touch event has occured and (2) we've opened an 
+     * for this to happen - (1) if a real multi-touch event has occured and (2) we've opened an
      * extension keyboard.
      */
     private boolean mDisableDisambiguation;
-    /** The distance threshold at which we start treating the touch session as a multi-touch */
+    /**
+     * The distance threshold at which we start treating the touch session as a multi-touch
+     */
     private int mJumpThresholdSquare = Integer.MAX_VALUE;
-    /** The y coordinate of the last row */
+    /**
+     * The y coordinate of the last row
+     */
     private int mLastRowY;
     private int mExtensionLayoutResId = 0;
     private LatinKeyboard mExtensionKeyboard;
@@ -105,6 +125,12 @@ public class LatinKeyboardView extends LatinKeyboardBaseView {
         this(context, attrs, 0);
     }
 
+    /*
+    * Todo: LatinKeyboardView :: whole keyboard ui change related stuff done here
+    *  to access the needed parameter we can change there access type to protected and will do the
+    *  modifications here
+    *
+    * */
     public LatinKeyboardView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
 
@@ -120,20 +146,29 @@ public class LatinKeyboardView extends LatinKeyboardBaseView {
             int attr = a.getIndex(i);
 
             switch (attr) {
-            case R.styleable.LatinKeyboardBaseView_keyPreviewLayout:
-                previewLayout = a.getResourceId(attr, 0);
-                if (previewLayout == R.layout.null_layout) previewLayout = 0;
-                break;
-            case R.styleable.LatinKeyboardBaseView_keyPreviewOffset:
-                mPreviewOffset = a.getDimensionPixelOffset(attr, 0);
-                break;
-            case R.styleable.LatinKeyboardBaseView_keyPreviewHeight:
-                mPreviewHeight = a.getDimensionPixelSize(attr, 80);
-                break;
-            case R.styleable.LatinKeyboardBaseView_popupLayout:
-                mPopupLayout = a.getResourceId(attr, 0);
-                if (mPopupLayout == R.layout.null_layout) mPopupLayout = 0;
-                break;
+                case R.styleable.LatinKeyboardBaseView_keyPreviewLayout:
+                    previewLayout = a.getResourceId(attr, 0);
+                    if (previewLayout == R.layout.null_layout) previewLayout = 0;
+                    break;
+                case R.styleable.LatinKeyboardBaseView_keyPreviewOffset:
+                    mPreviewOffset = a.getDimensionPixelOffset(attr, 0);
+                    break;
+                case R.styleable.LatinKeyboardBaseView_keyPreviewHeight:
+                    mPreviewHeight = a.getDimensionPixelSize(attr, 80);
+                    break;
+                case R.styleable.LatinKeyboardBaseView_popupLayout:
+                    mPopupLayout = a.getResourceId(attr, 0);
+                    if (mPopupLayout == R.layout.null_layout) mPopupLayout = 0;
+                    break;
+                case R.styleable.LatinKeyboardBaseView_keyTextColor:
+                    mKeyTextColor = a.getResourceId(attr, Color.CYAN);
+                    break;
+                case R.styleable.LatinKeyboardBaseView_keyHintColor:
+                    mKeyHintColor = a.getResourceId(attr, Color.RED);
+                    break;
+                case R.styleable.LatinKeyboardBaseView_keyBackground:
+                    mKeyBackground = a.getResources().getDrawable(R.drawable.avatar_1);
+                    break;
             }
         }
 
@@ -175,10 +210,10 @@ public class LatinKeyboardView extends LatinKeyboardBaseView {
         mPhoneKeyboard = phoneKeyboard;
     }
 
-    public void setExtensionLayoutResId (int id) {
+    public void setExtensionLayoutResId(int id) {
         mExtensionLayoutResId = id;
     }
-    
+
     @Override
     public void setPreviewEnabled(boolean previewEnabled) {
         if (getKeyboard() == mPhoneKeyboard) {
@@ -194,7 +229,7 @@ public class LatinKeyboardView extends LatinKeyboardBaseView {
         final Keyboard oldKeyboard = getKeyboard();
         if (oldKeyboard instanceof LatinKeyboard) {
             // Reset old keyboard state before switching to new keyboard.
-            ((LatinKeyboard)oldKeyboard).keyReleased();
+            ((LatinKeyboard) oldKeyboard).keyReleased();
         }
         super.setKeyboard(newKeyboard);
         // One-seventh of the keyboard width seems like a reasonable threshold
@@ -204,12 +239,13 @@ public class LatinKeyboardView extends LatinKeyboardBaseView {
         int numRows = newKeyboard.mRowCount;
         mLastRowY = (newKeyboard.getHeight() * (numRows - 1)) / numRows;
         mExtensionKeyboard = ((LatinKeyboard) newKeyboard).getExtension();
-        if (mExtensionKeyboard != null && mExtension != null) mExtension.setKeyboard(mExtensionKeyboard);
+        if (mExtensionKeyboard != null && mExtension != null)
+            mExtension.setKeyboard(mExtensionKeyboard);
         setKeyboardLocal(newKeyboard);
     }
 
     @Override
-    /*package*/ boolean enableSlideKeyHack() {
+        /*package*/ boolean enableSlideKeyHack() {
         return true;
     }
 
@@ -244,6 +280,7 @@ public class LatinKeyboardView extends LatinKeyboardBaseView {
      * until an UP is received.<P>
      * When a sudden jump is detected, an UP event is simulated at the last position and when
      * the sudden moves subside, a DOWN event is simulated for the second key.
+     *
      * @param me the motion event
      * @return true if the event was consumed, so that it doesn't continue to be handled by
      * KeyboardView.
@@ -265,48 +302,48 @@ public class LatinKeyboardView extends LatinKeyboardBaseView {
         }
 
         switch (action) {
-        case MotionEvent.ACTION_DOWN:
-            // Reset the "session"
-            mDroppingEvents = false;
-            mDisableDisambiguation = false;
-            break;
-        case MotionEvent.ACTION_MOVE:
-            // Is this a big jump?
-            final int distanceSquare = (mLastX - x) * (mLastX - x) + (mLastY - y) * (mLastY - y);
-            // Check the distance and also if the move is not entirely within the bottom row
-            // If it's only in the bottom row, it might be an intentional slide gesture
-            // for language switching
-            if (distanceSquare > mJumpThresholdSquare
-                    && (mLastY < mLastRowY || y < mLastRowY)) {
-                // If we're not yet dropping events, start dropping and send an UP event
-                if (!mDroppingEvents) {
-                    mDroppingEvents = true;
-                    // Send an up event
+            case MotionEvent.ACTION_DOWN:
+                // Reset the "session"
+                mDroppingEvents = false;
+                mDisableDisambiguation = false;
+                break;
+            case MotionEvent.ACTION_MOVE:
+                // Is this a big jump?
+                final int distanceSquare = (mLastX - x) * (mLastX - x) + (mLastY - y) * (mLastY - y);
+                // Check the distance and also if the move is not entirely within the bottom row
+                // If it's only in the bottom row, it might be an intentional slide gesture
+                // for language switching
+                if (distanceSquare > mJumpThresholdSquare
+                        && (mLastY < mLastRowY || y < mLastRowY)) {
+                    // If we're not yet dropping events, start dropping and send an UP event
+                    if (!mDroppingEvents) {
+                        mDroppingEvents = true;
+                        // Send an up event
+                        MotionEvent translated = MotionEvent.obtain(me.getEventTime(), me.getEventTime(),
+                                MotionEvent.ACTION_UP,
+                                mLastX, mLastY, me.getMetaState());
+                        super.onTouchEvent(translated);
+                        translated.recycle();
+                    }
+                    result = true;
+                } else if (mDroppingEvents) {
+                    // If moves are small and we're already dropping events, continue dropping
+                    result = true;
+                }
+                break;
+            case MotionEvent.ACTION_UP:
+                if (mDroppingEvents) {
+                    // Send a down event first, as we dropped a bunch of sudden jumps and assume that
+                    // the user is releasing the touch on the second key.
                     MotionEvent translated = MotionEvent.obtain(me.getEventTime(), me.getEventTime(),
-                            MotionEvent.ACTION_UP,
-                            mLastX, mLastY, me.getMetaState());
+                            MotionEvent.ACTION_DOWN,
+                            x, y, me.getMetaState());
                     super.onTouchEvent(translated);
                     translated.recycle();
+                    mDroppingEvents = false;
+                    // Let the up event get processed as well, result = false
                 }
-                result = true;
-            } else if (mDroppingEvents) {
-                // If moves are small and we're already dropping events, continue dropping
-                result = true;
-            }
-            break;
-        case MotionEvent.ACTION_UP:
-            if (mDroppingEvents) {
-                // Send a down event first, as we dropped a bunch of sudden jumps and assume that
-                // the user is releasing the touch on the second key.
-                MotionEvent translated = MotionEvent.obtain(me.getEventTime(), me.getEventTime(),
-                        MotionEvent.ACTION_DOWN,
-                        x, y, me.getMetaState());
-                super.onTouchEvent(translated);
-                translated.recycle();
-                mDroppingEvents = false;
-                // Let the up event get processed as well, result = false
-            }
-            break;
+                break;
         }
         // Track the previous coordinate
         mLastX = x;
@@ -388,7 +425,7 @@ public class LatinKeyboardView extends LatinKeyboardBaseView {
                         mFirstEvent = true;
                     }
                     // Stop processing multi-touch errors
-                    mDisableDisambiguation  = true;
+                    mDisableDisambiguation = true;
                 }
                 return true;
             }
@@ -424,8 +461,8 @@ public class LatinKeyboardView extends LatinKeyboardBaseView {
     }
 
     /*
-    * Todo: LatinKeyboardView:: MakePopUpWindow dialog working
-    * */
+     * Todo: LatinKeyboardView:: MakePopUpWindow dialog working
+     * */
     private void makePopupWindow() {
         dismissPopupKeyboard();
         if (mExtensionPopup == null) {
@@ -476,36 +513,46 @@ public class LatinKeyboardView extends LatinKeyboardBaseView {
 
     private static class ExtensionKeyboardListener implements OnKeyboardActionListener {
         private OnKeyboardActionListener mTarget;
+
         ExtensionKeyboardListener(OnKeyboardActionListener target) {
             mTarget = target;
         }
+
         public void onKey(int primaryCode, int[] keyCodes, int x, int y) {
             mTarget.onKey(primaryCode, keyCodes, x, y);
         }
+
         public void onPress(int primaryCode) {
             mTarget.onPress(primaryCode);
         }
+
         public void onRelease(int primaryCode) {
             mTarget.onRelease(primaryCode);
         }
+
         public void onText(CharSequence text) {
             mTarget.onText(text);
         }
+
         public void onCancel() {
             mTarget.onCancel();
         }
+
         public boolean swipeDown() {
             // Don't pass through
             return true;
         }
+
         public boolean swipeLeft() {
             // Don't pass through
             return true;
         }
+
         public boolean swipeRight() {
             // Don't pass through
             return true;
         }
+
         public boolean swipeUp() {
             // Don't pass through
             return true;
@@ -529,6 +576,8 @@ public class LatinKeyboardView extends LatinKeyboardBaseView {
     private int mLastX;
     private int mLastY;
     private Paint mPaint;
+    private Paint smalltextpaint;
+    List<Key> keys;
 
     private void setKeyboardLocal(Keyboard k) {
         if (DEBUG_AUTO_PLAY) {
@@ -591,7 +640,7 @@ public class LatinKeyboardView extends LatinKeyboardBaseView {
     }
 
     private void findKeys() {
-        List<Key> keys = getKeyboard().getKeys();
+        keys = getKeyboard().getKeys();
         // Get the keys on this keyboard
         for (int i = 0; i < keys.size(); i++) {
             int code = keys.get(i).codes[0];
@@ -640,9 +689,12 @@ public class LatinKeyboardView extends LatinKeyboardBaseView {
                 mPaint = new Paint();
                 mPaint.setColor(0x80FFFFFF);
                 mPaint.setAntiAlias(false);
+
             }
             c.drawLine(mLastX, 0, mLastX, getHeight(), mPaint);
             c.drawLine(0, mLastY, getWidth(), mLastY, mPaint);
         }
+
+
     }
 }

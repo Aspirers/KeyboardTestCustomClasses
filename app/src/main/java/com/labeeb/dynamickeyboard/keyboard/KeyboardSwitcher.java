@@ -14,6 +14,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Locale;
 
+
+/*
+*
+* TODO: KeyboardSwitcher:: Theme switch here
+* */
 public class KeyboardSwitcher implements
         SharedPreferences.OnSharedPreferenceChangeListener {
     private static String TAG = "PCKeyboardKbSw";
@@ -451,12 +456,12 @@ public class KeyboardSwitcher implements
         if (mInputView == null) return;
         mInputView.setAltIndicator(active);
     }
-    
+
     public void setMetaIndicator(boolean active) {
         if (mInputView == null) return;
         mInputView.setMetaIndicator(active);
     }
-    
+
     public void toggleShift() {
         //Log.i(TAG, "toggleShift isAlphabetMode=" + isAlphabetMode() + " mSettings.fullMode=" + mSettings.fullMode);
         if (isAlphabetMode())
@@ -597,6 +602,9 @@ public class KeyboardSwitcher implements
         changeLatinKeyboardView(mLayoutId, true);
     }
 
+    /*
+    * TODO: KeyboardSwitcher: changeLatinKeyboardView:: keyboards layout change
+    * */
     private void changeLatinKeyboardView(int newLayout, boolean forceReset) {
         if (mLayoutId != newLayout || mInputView == null || forceReset) {
             if (mInputView != null) {

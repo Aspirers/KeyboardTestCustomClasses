@@ -53,7 +53,7 @@
             android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-                <action android:name="org.pocketworkstation.pckeyboard.SETTINGS" />
+                <action android:name="com.labeeb.dynamickeyboard.keyboard.SETTINGS" />
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
@@ -65,7 +65,7 @@
             android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-                <action android:name="org.pocketworkstation.pckeyboard.INPUT_LANGUAGE_SELECTION" />
+                <action android:name="com.labeeb.dynamickeyboard.keyboard.INPUT_LANGUAGE_SELECTION" />
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>

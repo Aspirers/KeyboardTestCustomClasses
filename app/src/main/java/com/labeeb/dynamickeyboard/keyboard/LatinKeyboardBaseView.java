@@ -158,8 +158,8 @@ public class LatinKeyboardBaseView extends View implements PointerTracker.UIProx
     // XML attribute
     private float mKeyTextSize;
     private float mLabelScale = 1.0f;
-    private int mKeyTextColor;
-    private int mKeyHintColor;
+    protected int mKeyTextColor;
+    protected int mKeyHintColor;
     private int mKeyCursorColor;
     private boolean mInvertSymbols;
     private boolean mRecolorSymbols;
@@ -168,7 +168,7 @@ public class LatinKeyboardBaseView extends View implements PointerTracker.UIProx
     private int mSymbolColorScheme = 0;
     private int mShadowColor;
     private float mShadowRadius;
-    private Drawable mKeyBackground;
+    protected Drawable mKeyBackground;
     private int mBackgroundAlpha;
     private float mBackgroundDimAmount;
     private float mKeyHysteresisDistance;
@@ -454,6 +454,10 @@ public class LatinKeyboardBaseView extends View implements PointerTracker.UIProx
         this(context, attrs, R.attr.keyboardViewStyle);
     }
 
+/*
+* Todo: LatinKeyboardBaseView :: any thing need to be change will be added in this constructor
+*  like keystroke and others ui related stufff
+* */
     public LatinKeyboardBaseView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
 
