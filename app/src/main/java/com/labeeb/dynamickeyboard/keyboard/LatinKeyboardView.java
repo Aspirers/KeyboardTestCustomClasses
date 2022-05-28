@@ -167,7 +167,7 @@ public class LatinKeyboardView extends LatinKeyboardBaseView {
                     mKeyHintColor = a.getResourceId(attr, Color.RED);
                     break;
                 case R.styleable.LatinKeyboardBaseView_keyBackground:
-                    mKeyBackground = a.getResources().getDrawable(R.drawable.avatar_1);
+                    mKeyBackground = a.getResources().getDrawable(R.drawable.keybg4);
                     break;
             }
         }
